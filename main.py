@@ -91,7 +91,7 @@ def index():
 
     # if no post id passed in query parms, then retrieve all
     if post_id == "":
-        posts = Blog.query.all()
+        posts = Blog.query.order_by("Blog.id DESC").all()
         return render_template('post_list.html', title="Build a Blog", posts=posts)
 
     # if post id passed in query parms, then retrieve that one
