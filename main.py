@@ -1,6 +1,8 @@
 from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import re
+from hashutils import make_pw_hash, check_pw_hash
+from datetime import datetime
 
 match_username_password = re.compile(r"\w{3,20}\Z")
 
@@ -16,23 +18,27 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(255))
+    date_pub = db.Column(db.DateTime)
+    date_upd = db.Column(db.DateTime)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __init__(self, title, body, owner):
         self.title = title
         self.body = body
         self.owner = owner
+        self.date_pub = datetime.utcnow()
+        self.date_upd = datetime.utcnow()
 
 class User(db.Model):
     """Owners of the blog posts"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(120))
+    pw_hash = db.Column(db.String(120))
     blogs = db.relationship('Blog', backref='owner')
 
     def __init__(self, username, password):
         self.username = username
-        self.password = password
+        self.pw_hash = make_pw_hash(password)
 
 @app.before_request
 def require_login():
@@ -50,7 +56,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
+        if user and check_pw_hash(password, user.pw_hash):
             session['username'] = username
             flash('Logged in')
             return redirect('/newpost')
@@ -117,11 +123,12 @@ def blog():
     if user_id != "":
         #get user list
         posts = Blog.query.filter_by(owner_id=user_id).all()
-        return render_template('post_list.html', title="Build a Blog", posts=posts)
+        author_name = User.query.get(user_id).username
+        return render_template('post_list.html', title="Build a Blog", posts_for=author_name, posts=posts)
 
     #get all posts
     posts = Blog.query.order_by("Blog.id DESC").all()
-    return render_template('post_list.html', title="Build a Blog", posts=posts)
+    return render_template('post_list.html', title="Build a Blog", posts_for='Everyone', posts=posts)
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_post():

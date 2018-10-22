@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>The Posts</h1>
+    <h1>Posts by {{posts_for}}</h1>
 
     {% if posts|length == 0 %}
 
@@ -12,7 +12,7 @@
     {% for post in posts %}
         <h2><a href="./blog?id={{post.id}}">{{post.title}}</a></h2>
         <p class="post-body">{{post.body}}</p>
-        <p class="post-author">written by <a href="./blog?user={{post.owner.id}}">{{post.owner.username}}</a></p>
+        <p class="post-author">written by <a href="./blog?user={{post.owner.id}}">{{post.owner.username}}</a> on {{post.date_pub.date()}}</p>
     {% endfor %}
     
     {% endif %}
