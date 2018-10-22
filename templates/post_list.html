@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Build a Blog</h1>
+    <h1>The Posts</h1>
 
     {% if posts|length == 0 %}
 
@@ -11,7 +11,8 @@
     
     {% for post in posts %}
         <h2><a href="./blog?id={{post.id}}">{{post.title}}</a></h2>
-        <p>{{post.body}}</p>
+        <p class="post-body">{{post.body}}</p>
+        <p class="post-author">written by <a href="./blog?user={{post.owner.id}}">{{post.owner.username}}</a></p>
     {% endfor %}
     
     {% endif %}
