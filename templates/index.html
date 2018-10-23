@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from 'base.html' import render_pagination %}
+
 {% block content %}
     <h1>Our Authors</h1>
 
@@ -13,6 +15,8 @@
         <h2><a href="./blog?user={{author.id}}">{{author.username}}</a></h2>
         <p class="post-count">{{author.blogs|length}} post(s)</p>
     {% endfor %}
+
+    {{render_pagination(pagination, endpoint)}}
     
     {% endif %}
     

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session, flash
+from flask import Flask, request, redirect, render_template, session, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 import re
 from hashutils import make_pw_hash, check_pw_hash
@@ -107,8 +107,9 @@ def logout():
 
 @app.route('/', methods=['GET'])
 def index():
-    users = User.query.all()
-    return render_template('index.html', title="Build a Blog", authors=users)
+    page = request.args.get('page', 1, type=int)
+    paginate = User.query.paginate(page, 5, False)
+    return render_template('index.html', title="Build a Blog", authors=paginate.items, pagination=paginate, endpoint='index')
 
 @app.route('/blog', methods=['GET'])
 def blog():
@@ -122,13 +123,15 @@ def blog():
     
     if user_id != "":
         #get user list
-        posts = Blog.query.filter_by(owner_id=user_id).all()
+        page = request.args.get('page', 1, type=int)
+        paginate = Blog.query.filter_by(owner_id=user_id).order_by("Blog.date_pub DESC").paginate(page, 5, False)
         author_name = User.query.get(user_id).username
-        return render_template('post_list.html', title="Build a Blog", posts_for=author_name, posts=posts)
+        return render_template('post_list.html', title="Build a Blog", posts_for=author_name, posts=paginate.items, pagination=paginate, endpoint='blog', selected_author=user_id)
 
     #get all posts
-    posts = Blog.query.order_by("Blog.id DESC").all()
-    return render_template('post_list.html', title="Build a Blog", posts_for='Everyone', posts=posts)
+    page = request.args.get('page', 1, type=int)
+    paginate = Blog.query.order_by("Blog.date_pub DESC").paginate(page, 5, False)
+    return render_template('post_list.html', title="Build a Blog", posts_for='Everyone', posts=paginate.items, pagination=paginate, endpoint='blog')
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_post():

@@ -46,6 +46,19 @@
             .post-body {
                 margin-bottom: 0.25rem;
             }
+            .pagination {
+                margin-left: 10%;
+            }
+            .page {
+                margin-right: 0.25em;
+                padding: 0.5em;
+            }
+            .page.active {
+                border: 1px solid lightgray;
+            }
+            .separator {
+                height: 1.5em;
+            }
         </style>
     </head>
 <body>
@@ -80,6 +93,23 @@
     {% block content %}
     {% endblock %}
     </div>
+
+    {% macro render_pagination(pagination, endpoint, user) %}
+    <div class=separator></div>
+    <div class=pagination>
+        {%- for page in pagination.iter_pages() %}
+          {% if page %}
+            {% if page != pagination.page %}
+                <a class=page href="{{ url_for(endpoint, user=user, page=page) }}">{{ page }}</a>
+            {% else %}
+                <span class="page active">{{ page }}</span>
+            {% endif %}
+          {% else %}
+            <span class=ellipsis>…</span>
+          {% endif %}
+        {%- endfor %}
+    </div>    
+    {% endmacro %}
 
 </body>
 </html>
